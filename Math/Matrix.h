@@ -113,11 +113,7 @@ inline Matrix<T> Matrix<T>::operator*(const Matrix<T>& rhs)
 	for (size_t res_j = 0; res_j < m_rows; ++res_j)
 		for (size_t res_i = 0; res_i < rhs.m_columns; ++res_i)
 			for (size_t j = 0; j < rhs.m_rows; ++j)
-			{
-				T l = (*this)[res_j][j];
-				T r = rhs[j][res_i];
 				res[res_j][res_i] += (*this)[res_j][j] * rhs[j][res_i];
-			}
 	return res;
 }
 
