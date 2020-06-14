@@ -1,15 +1,9 @@
 #pragma once
 
-#ifdef MATHDLL_API
-#define MATHDLL _declspec(dllexport)
-#else
-#define MATHDLL _declspec(dllimport)
-#endif // !MATHDLL_API
-
 #include<iostream>
 
 template <class T>
-class MATHDLL Matrix
+class Matrix
 {
 public:
 	Matrix(const size_t& i_rows, const size_t& i_columns);
