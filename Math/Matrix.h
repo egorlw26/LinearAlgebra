@@ -15,14 +15,28 @@ public:
 	Matrix<T> operator-() const;
 	Matrix<T>& operator +=(const Matrix<T>& rhs);
 	Matrix<T>& operator -=(const Matrix<T>& rhs);
-	Matrix<T> operator *(const Matrix<T>& rhs);
-	Matrix<T> operator +(const Matrix<T>& rhs);
-	Matrix<T> operator -(const Matrix<T>& rhs);
 
 	Matrix<T> transpose() const;
 
-	template<T>
-	friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& obj);
+	bool isSquare() const;
+
+	template<class T, class U>
+	friend Matrix<decltype(std::declval<T>()* std::declval<U>())> operator * (const Matrix<T>& lhs, const U& rhs);
+
+	template<class T, class U>
+	friend Matrix<decltype(std::declval<T>()* std::declval<U>())> operator * (const U& lhs, const Matrix<T>& rhs);
+
+	template<class T, class U>
+	friend Matrix<decltype(std::declval<T>() + std::declval<U>())> operator + (const Matrix<T>& lhs, const Matrix<U>& rhs);
+	
+	template<class T, class U>
+	friend Matrix<decltype(std::declval<T>() - std::declval<U>())> operator - (const Matrix<T>& lhs, const Matrix<U>& rhs);
+
+	template<class T, class U>
+	friend Matrix<decltype(std::declval<T>()* std::declval<U>())> operator * (const Matrix<T>& lhs, const Matrix<U>& rhs);
+
+	template<class U>
+	friend std::ostream& operator<<(std::ostream& os, const Matrix<U>& obj);
 
 	~Matrix();
 
@@ -119,35 +133,10 @@ inline Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs)
 }
 
 template<class T>
-inline Matrix<T> Matrix<T>::operator*(const Matrix<T>& rhs)
-{
-	Matrix<T> res(m_rows, rhs.m_columns);
-	for (size_t res_j = 0; res_j < m_rows; ++res_j)
-		for (size_t res_i = 0; res_i < rhs.m_columns; ++res_i)
-			for (size_t j = 0; j < rhs.m_rows; ++j)
-				res[res_j][res_i] += (*this)[res_j][j] * rhs[j][res_i];
-	return res;
-}
-
-
-template<class T>
 inline Matrix<T>::~Matrix()
 {
 	delete[] mp_values;
 	mp_values = nullptr;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator+(const Matrix<T>& rhs)
-{
-	Matrix<T> res(*this);
-	return res += rhs;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator-(const Matrix<T>& rhs)
-{
-	return (*this) -= rhs;
 }
 
 template<class T>
@@ -157,6 +146,58 @@ inline Matrix<T> Matrix<T>::transpose() const
 	for (size_t i = 0; i < m_rows; ++i)
 		for (size_t j = 0; j < m_columns; ++j)
 			res[i][j] = (*this)[j][i];
+	return res;
+}
+
+template<class T>
+inline bool Matrix<T>::isSquare() const
+{
+	return m_rows == m_columns;
+}
+
+template<class T, class U>
+inline Matrix<decltype(std::declval<T>()* std::declval<U>())> operator*(const Matrix<T>& lhs, const U& rhs)
+{
+	Matrix<decltype(std::declval<T>()* std::declval<U>())> res(lhs.m_rows, lhs.m_columns);
+
+	for (size_t i = 0; i < lhs.getRows() * lhs.getColumns(); ++i)
+		res.mp_values[i] = lhs.mp_values[i] * rhs;
+	return res;
+}
+
+template<class T, class U>
+inline Matrix<decltype(std::declval<T>()* std::declval<U>())> operator*(const U& lhs, const Matrix<T>& rhs)
+{
+	return rhs * lhs;
+}
+
+template<class T, class U>
+inline Matrix<decltype(std::declval<T>() + std::declval<U>())> operator+(const Matrix<T>& lhs, const Matrix<U>& rhs)
+{
+	Matrix<decltype(std::declval<T>() + std::declval<U>())> res(lhs.m_rows, lhs.m_columns);
+	for (size_t i = 0; i < res.m_rows * res.m_columns; ++i)
+		res.mp_values[i] = lhs.mp_values[i] + rhs.mp_values[i];
+
+	return res;
+}
+
+template<class T, class U>
+inline Matrix<decltype(std::declval<T>() - std::declval<U>())> operator-(const Matrix<T>& lhs, const Matrix<U>& rhs)
+{
+	Matrix<decltype(std::declval<T>() - std::declval<U>())> res(lhs.m_rows, lhs.m_columns);
+	for (size_t i = 0; i < res.m_rows * res.m_columns; ++i)
+		res.mp_values[i] = lhs.mp_values[i] - rhs.mp_values[i];
+	return res;
+}
+
+template<class T, class U>
+inline Matrix<decltype(std::declval<T>()* std::declval<U>())> operator*(const Matrix<T>& lhs, const Matrix<U>& rhs)
+{
+	Matrix<decltype(std::declval<T>()* std::declval<U>())> res (lhs.m_rows, lhs.m_rows);
+	for (size_t res_j = 0; res_j < lhs.m_rows; ++res_j)
+		for (size_t res_i = 0; res_i < rhs.m_columns; ++res_i)
+			for (size_t j = 0; j < rhs.m_rows; ++j)
+				res[res_j][res_i] += lhs[res_j][j] * rhs[j][res_i];
 	return res;
 }
 
