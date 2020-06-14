@@ -11,8 +11,12 @@ int main()
 
 	Matrix<int> b(a);
 
+	std::cout << a << '\n' << b << '\n';
+
 	Matrix<int> c = a * b;
 
 	std::cout << c;
 
+	system("PAUSE");
+	return 0;
 }
