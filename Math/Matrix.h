@@ -18,11 +18,14 @@ public:
 	size_t getColumns() const;
 	T* operator [](const size_t& i_row);
 	const T* operator [](const size_t& i_row) const;
+	Matrix<T> operator-() const;
 	Matrix<T>& operator +=(const Matrix<T>& rhs);
+	Matrix<T>& operator -=(const Matrix<T>& rhs);
 	Matrix<T> operator *(const Matrix<T>& rhs);
+	Matrix<T> operator +(const Matrix<T>& rhs);
+	Matrix<T> operator -(const Matrix<T>& rhs);
 
-	template<T>
-	friend Matrix<T> operator +(Matrix<T> lhs, const Matrix<T>& rhs);
+	Matrix<T> transpose() const;
 
 	template<T>
 	friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& obj);
@@ -93,6 +96,15 @@ inline const T* Matrix<T>::operator[](const size_t& i_row) const
 }
 
 template<class T>
+inline Matrix<T> Matrix<T>::operator-() const
+{
+	Matrix<T> res(*this);
+	for (size_t i = 0; i < m_rows * m_columns; ++i)
+		res.mp_values[i] *= -1;
+	return res;
+}
+
+template<class T>
 inline Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs)
 {
 	if (m_rows != rhs.m_rows || m_columns != rhs.m_columns)
@@ -102,6 +114,13 @@ inline Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs)
 	for (size_t i = 0; i < size; ++i)
 		mp_values[i] += rhs.mp_values[i];
 
+	return *this;
+}
+
+template<class T>
+inline Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs)
+{
+	*this += -rhs;
 	return *this;
 }
 
@@ -125,10 +144,26 @@ inline Matrix<T>::~Matrix()
 }
 
 template<class T>
-inline Matrix<T> operator+(Matrix<T> lhs, const Matrix<T>& rhs)
+inline Matrix<T> Matrix<T>::operator+(const Matrix<T>& rhs)
 {
-	lhs += rhs;
-	return lhs;
+	Matrix<T> res(*this);
+	return res += rhs;
+}
+
+template<class T>
+inline Matrix<T> Matrix<T>::operator-(const Matrix<T>& rhs)
+{
+	return (*this) -= rhs;
+}
+
+template<class T>
+inline Matrix<T> Matrix<T>::transpose() const
+{
+	Matrix<T> res(*this);
+	for (size_t i = 0; i < m_rows; ++i)
+		for (size_t j = 0; j < m_columns; ++j)
+			res[i][j] = (*this)[j][i];
+	return res;
 }
 
 template<class T>
