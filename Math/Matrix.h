@@ -1,6 +1,7 @@
 #pragma once
 
 #include<iostream>
+#include<string>
 
 template <class T>
 class Matrix
@@ -44,10 +45,13 @@ public:
 	template<class T, class U>
 	friend Matrix<decltype(std::declval<T>()* std::declval<U>())> operator * (const U& lhs, const Matrix<T>& rhs);
 
-	template<class U>
-	friend std::ostream& operator<<(std::ostream& os, const Matrix<U>& obj);
-
 	static Matrix<T> createIdentity(const size_t dimension);
+
+	double determinant() const;
+
+	Matrix<T> removeRowAndColumn(const size_t i_row, const size_t i_column) const;
+
+	std::string toString() const;
 
 	~Matrix();
 
@@ -175,6 +179,66 @@ inline Matrix<T> Matrix<T>::createIdentity(const size_t dimension)
 }
 
 template<class T>
+inline double Matrix<T>::determinant() const
+{
+	if (!isSquare())
+		throw "You can calculate determinant only for square matrix";
+
+	if (m_rows == 2)
+		return (double)mp_values[0] * mp_values[3] - mp_values[1] * mp_values[2];
+	if (m_rows == 3)
+		return (double)
+		mp_values[0] * mp_values[4] * mp_values[8] +
+		mp_values[1] * mp_values[5] * mp_values[6] +
+		mp_values[2] * mp_values[3] * mp_values[7] - 
+		mp_values[2] * mp_values[4] * mp_values[6] -
+		mp_values[1] * mp_values[3] * mp_values[8] -
+		mp_values[0] * mp_values[5] * mp_values[7];
+
+	double determinant = 0;
+	for (size_t j = 0; j < m_columns; ++j)
+		if ((*this)[0][j] != 0)
+		{
+			auto test = removeRowAndColumn(0, j);
+			determinant += std::pow(-1, j) * mp_values[j] * removeRowAndColumn(0, j).determinant();
+		}
+	return determinant;
+}
+
+template<class T>
+inline Matrix<T> Matrix<T>::removeRowAndColumn(const size_t i_row, const size_t i_column) const
+{
+	Matrix<T> res(m_rows - 1, m_columns - 1);
+	for(size_t i = 0; i < m_rows; ++i)
+		for (size_t j = 0; j < m_columns; ++j)
+		{
+			if (i < i_row && j < i_column)
+				res[i][j] = (*this)[i][j];
+			if (i < i_row && j > i_column)
+				res[i][j - 1] = (*this)[i][j];
+			if (i > i_row && j < i_column)
+				res[i - 1][j] = (*this)[i][j];
+			if (i > i_row && j > i_column)
+				res[i - 1][j - 1] = (*this)[i][j];
+		}
+	return res;
+}
+
+template<class T>
+inline std::string Matrix<T>::toString() const
+{
+	std::string res = "";
+	for (size_t i = 0; i < m_rows; ++i)
+		for (size_t j = 0; j < m_columns; ++j)
+		{
+			res += std::to_string((*this)[i][j]) + ' ';
+			if (j == m_columns - 1 && i != m_rows - 1)
+				res += '\n';
+		}
+	return res;
+}
+
+template<class T>
 inline Matrix<T>::~Matrix()
 {
 	delete[] mp_values;
@@ -241,17 +305,4 @@ inline Matrix<decltype(std::declval<T>()* std::declval<U>())> operator*(const Ma
 			for (size_t j = 0; j < rhs.m_rows; ++j)
 				res[res_j][res_i] += lhs[res_j][j] * rhs[j][res_i];
 	return res;
-}
-
-template<class T>
-inline std::ostream& operator<<(std::ostream& os, const Matrix<T>& obj)
-{
-	for (size_t i = 0; i < obj.getRows(); ++i)
-		for (size_t j = 0; j < obj.getColumns(); ++j)
-		{
-			os << obj[i][j] << ' ';
-			if (j == obj.getColumns() - 1 && i != obj.getRows() - 1)
-				os << '\n';
-		}
-	return os;
 }
